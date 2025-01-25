@@ -34,7 +34,7 @@ inline StatefulIterator<T, BaseIterator, Function>::StatefulIterator(const State
 template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
 inline StatefulIterator<T, BaseIterator, Function>::StatefulIterator(const BaseIterator<T> &begin,
     const BaseIterator<T> &end, const Function<T> &increment_fn):
-    Iterator<T, BaseIterator>(begin), value_(*begin), end_(end), increment_fn(increment_fn)
+    Iterator<T, BaseIterator>(begin), value_(begin == end ? NULL : *begin), end_(end), increment_fn(increment_fn)
 {}
 
 template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
