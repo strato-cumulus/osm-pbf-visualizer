@@ -13,7 +13,7 @@
 
 namespace osm_unpack {
 
-class PrimitiveGroup;
+class PrimitiveBlock;
 
 class WrapperBase
 {
@@ -50,7 +50,7 @@ class Node : WrapperBase {
 
     std::unordered_map<std::string, std::string> tags_;
 
-    friend class PrimitiveGroup;
+    friend class PrimitiveBlock;
 
     const std::string tags_to_string() const;
 
@@ -73,11 +73,9 @@ public:
 
 };
 
-class PrimitiveGroup: protected WrapperBase {
+class PrimitiveBlock: protected WrapperBase {
 
-    const OSMPBF::PrimitiveGroup primitive_group;
-
-    google::protobuf::RepeatedPtrField<std::string> strings;
+    std::vector<std::string> strings;
 
     int32_t granularity;
     int64_t lat_offset;
@@ -86,17 +84,21 @@ class PrimitiveGroup: protected WrapperBase {
     std::map<int64_t, osm_unpack::Node> nodes_;
     std::map<int64_t, osm_unpack::Way> ways_;
 
-    void unpack_dense(const OSMPBF::PrimitiveBlock & parent_block);
-    void unpack_ways(const OSMPBF::PrimitiveBlock & parent_block);
+    void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
+    void unpack_ways(const OSMPBF::PrimitiveGroup & pbf_group);
 
     const double decode_coordinate(const int64_t & coordinate, const int64_t & offset) const;
 
 public:
 
-    PrimitiveGroup(const OSMPBF::PrimitiveBlock & parent_block, const OSMPBF::PrimitiveGroup & group);
+    PrimitiveBlock(const OSMPBF::PrimitiveBlock & parent_block);
 
     std::optional<osm_unpack::Node> find(const int64_t & id);
-    const std::map<int64_t, osm_unpack::Node> nodes() const;
+    std::map<int64_t, osm_unpack::Node>::const_iterator nodes_begin() const;
+    std::map<int64_t, osm_unpack::Node>::const_iterator nodes_end() const;
+
+    std::map<int64_t, osm_unpack::Way>::const_iterator ways_begin();
+    std::map<int64_t, osm_unpack::Way>::const_iterator ways_end();
 };
 
 template <class OutContainer, class InContainer>

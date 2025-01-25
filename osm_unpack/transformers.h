@@ -7,92 +7,61 @@
 
 namespace osm_unpack {
 
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-class StatefulIterator: public Iterator<T, Iterable>
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+class StatefulIterator: public Iterator<T, BaseIterator>
 {
-    T value_;
-    typename Iterable<T>::const_iterator end_;
+    typename std::remove_const<T>::type value_;
+    BaseIterator<T> end_;
 
     Function<T> increment_fn;
 
 public:
 
-    StatefulIterator(const StatefulIterator<T, Iterable, Function>& it);
-    StatefulIterator(typename Iterable<T>::const_iterator & begin,
-        typename Iterable<T>::const_iterator & end, const Function<T> & increment_fn);
+    StatefulIterator(const StatefulIterator<T, BaseIterator, Function>& it);
+    StatefulIterator(const BaseIterator<T> & begin,
+        const BaseIterator<T> & end, const Function<T> & increment_fn);
 
-    StatefulIterator<T, Iterable, Function>& operator++();
-    StatefulIterator<T, Iterable, Function> operator++(int);
+    StatefulIterator<T, BaseIterator, Function>& operator++();
+    StatefulIterator<T, BaseIterator, Function> operator++(int);
     virtual const T& operator*();
     virtual const T& operator->();
 };
 
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-class StatefulIterable
-{
-    typename Iterable<T>::const_iterator begin_;
-    typename Iterable<T>::const_iterator end_;
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline StatefulIterator<T, BaseIterator, Function>::StatefulIterator(const StatefulIterator<T, BaseIterator, Function>& it):
+    Iterator<T, BaseIterator>(it), value_(it.value_), end_(it.end_), increment_fn(it.increment_fn) {}
 
-    Function<T> increment_fn;
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline StatefulIterator<T, BaseIterator, Function>::StatefulIterator(const BaseIterator<T> &begin,
+    const BaseIterator<T> &end, const Function<T> &increment_fn):
+    Iterator<T, BaseIterator>(begin), value_(*begin), end_(end), increment_fn(increment_fn)
+{}
 
-public:
-
-    StatefulIterator<T, Iterable, Function> begin();
-    StatefulIterator<T, Iterable, Function> end();
-
-    StatefulIterable(const Iterable<T> & iterable, const Function<T> & increment_fn);
-};
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function> StatefulIterable<T, Iterable, Function>::begin()
-{
-    return StatefulIterator<T, Iterable, Function>(this->begin_, this->end_, this->increment_fn);
-}
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function> StatefulIterable<T, Iterable, Function>::end()
-{
-    return StatefulIterator<T, Iterable, Function>(this->end_, this->end_, this->increment_fn);
-}
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterable<T, Iterable, Function>::StatefulIterable(const Iterable<T> & iterable, const Function<T> & increment_fn):
-    begin_(iterable.begin()), end_(iterable.end()), increment_fn(increment_fn) {}
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function>::StatefulIterator(const StatefulIterator<T, Iterable, Function>& it):
-    Iterator<T, Iterable>(it), value_(it.value_), end_(it.end_) {}
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function>::StatefulIterator(typename Iterable<T>::const_iterator &begin,
-                                                       typename Iterable<T>::const_iterator &end, const Function<T> & increment_fn):
-    Iterator<T, Iterable>(begin), value_(begin != end ? *begin : NULL), end_(end), increment_fn(increment_fn) {}
-
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function>& StatefulIterator<T, Iterable, Function>::operator++()
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline StatefulIterator<T, BaseIterator, Function> &StatefulIterator<T, BaseIterator, Function>::operator++()
 {
     value_ = increment_fn(value_, *++this->it_);
     return *this;
 }
 
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline StatefulIterator<T, Iterable, Function> StatefulIterator<T, Iterable, Function>::operator++(int)
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline StatefulIterator<T, BaseIterator, Function> StatefulIterator<T, BaseIterator, Function>::operator++(int)
 {
-    auto old_copy = StatefulIterator<T, Iterable, Function>(*this);
+    auto old_copy = StatefulIterator<T, BaseIterator, Function>(*this);
     if ( this->it_ != end_ ) {
         ++*this;
     }
     return old_copy;
 }
 
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline const T& StatefulIterator<T, Iterable, Function>::operator*()
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline const T& StatefulIterator<T, BaseIterator, Function>::operator*()
 {
     return this->value_;
 }
 
-template<typename T, template<typename> class Iterable, template<typename> class Function>
-inline const T& StatefulIterator<T, Iterable, Function>::operator->()
+template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
+inline const T& StatefulIterator<T, BaseIterator, Function>::operator->()
 {
     return this->value_;
 }

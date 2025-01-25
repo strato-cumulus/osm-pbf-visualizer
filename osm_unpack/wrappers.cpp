@@ -42,16 +42,14 @@ const std::string osm_unpack::Node::to_string() const
     return ss.str();
 }
 
-void osm_unpack::PrimitiveGroup::unpack_dense(const OSMPBF::PrimitiveBlock &parent_block)
+void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group)
 {
-    auto pbf_nodes = primitive_group.dense();
+    auto pbf_nodes = pbf_group.dense();
     const int64_t pbf_nodes_size = pbf_nodes.id_size();
 
-    auto strings = parent_block.stringtable().s();
-
-    auto id_it = osm_unpack::StatefulIterable(pbf_nodes.id(), std::plus<int64_t>{}).begin();
-    auto encoded_lat_it = osm_unpack::StatefulIterable(pbf_nodes.lat(), std::plus<int64_t>{}).begin();
-    auto encoded_lon_it = osm_unpack::StatefulIterable(pbf_nodes.lon(), std::plus<int64_t>{}).begin();
+    auto id_it = osm_unpack::StatefulIterator(pbf_nodes.id().begin(), pbf_nodes.id().end(), std::plus<const int64_t>{});
+    auto encoded_lat_it = osm_unpack::StatefulIterator(pbf_nodes.lat().begin(), pbf_nodes.lat().end(), std::plus<const int64_t>{});
+    auto encoded_lon_it = osm_unpack::StatefulIterator(pbf_nodes.lon().begin(), pbf_nodes.lon().end(), std::plus<const int64_t>{});
 
     auto keys_vals_it = pbf_nodes.keys_vals().begin();
     
@@ -60,9 +58,9 @@ void osm_unpack::PrimitiveGroup::unpack_dense(const OSMPBF::PrimitiveBlock &pare
         std::unordered_map<std::string, std::string> tags;
 
         while ( *keys_vals_it != 0 ) {
-            auto k_it = strings.begin() + *keys_vals_it++;
-            auto v_it = strings.begin() + *keys_vals_it++;
-            tags.emplace(*k_it, *v_it);
+            auto const& key = strings[*keys_vals_it++];
+            auto const& value = strings[*keys_vals_it++];
+            tags.emplace(key, value);
         }
 
         const int64_t id = *id_it++;
@@ -73,41 +71,42 @@ void osm_unpack::PrimitiveGroup::unpack_dense(const OSMPBF::PrimitiveBlock &pare
     }
 }
 
-void osm_unpack::PrimitiveGroup::unpack_ways(const OSMPBF::PrimitiveBlock &parent_block)
+void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_group)
 {
-    auto pbf_ways = primitive_group.ways();
+    auto pbf_ways = pbf_group.ways();
 
     for ( auto way: pbf_ways ) {
-        auto refs = osm_unpack::StatefulIterable(way.refs(), std::plus<int64_t>{});
+        auto refs = osm_unpack::StatefulIterator(way.refs().begin(), way.refs().end(), std::plus<const int64_t>{});
         std::vector<Node> found_nodes;
-        for ( auto ref : refs ) {
-            auto node_it = this->nodes_.find(ref);
-            if ( node_it != this->nodes_.end() ) {
-                found_nodes.push_back(node_it->second);
+        for ( auto i = 0; i < pbf_group.ways_size(); ++i ) {
+            auto ref = refs++;
+            auto node_it = nodes_.find(*ref);
+            if ( node_it != nodes_.end() ) {
+                auto[node_id, node] = *node_it;
+                found_nodes.push_back(node);
             }
         }
     }
-    std::cout << std::flush;
 }
 
-const double osm_unpack::PrimitiveGroup::decode_coordinate(const int64_t &coordinate, const int64_t &offset) const
+const double osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coordinate, const int64_t &offset) const
 {
     return (( coordinate * granularity ) + offset) / 1000000000.0;
 }
 
-osm_unpack::PrimitiveGroup::PrimitiveGroup(const OSMPBF::PrimitiveBlock & parent_block,
-    const OSMPBF::PrimitiveGroup & group):
-    primitive_group(group),
-    strings(parent_block.stringtable().s()),
-    granularity(parent_block.granularity()),
-    lat_offset(parent_block.lat_offset()),
-    lon_offset(parent_block.lon_offset())
+osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block):
+    strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),
+    granularity(pbf_block.granularity()),
+    lat_offset(pbf_block.lat_offset()),
+    lon_offset(pbf_block.lon_offset())
 {
-    this->unpack_dense(parent_block);
-    this->unpack_ways(parent_block);
+    for ( auto const& pbf_group : pbf_block.primitivegroup() ) {
+        this->unpack_dense(pbf_group);
+        this->unpack_ways(pbf_group);
+    }
 }
 
-std::optional<osm_unpack::Node> osm_unpack::PrimitiveGroup::find(const int64_t &id)
+std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &id)
 {
     auto it = nodes_.find(id);
     if ( it == nodes_.end() ) {
@@ -116,8 +115,22 @@ std::optional<osm_unpack::Node> osm_unpack::PrimitiveGroup::find(const int64_t &
     return it->second;
 }
 
-const std::map<int64_t, osm_unpack::Node> osm_unpack::PrimitiveGroup::nodes() const
+std::map<int64_t, osm_unpack::Node>::const_iterator osm_unpack::PrimitiveBlock::nodes_begin() const
 {
-    return this->nodes_;
+    return this->nodes_.begin();
 }
 
+std::map<int64_t, osm_unpack::Node>::const_iterator osm_unpack::PrimitiveBlock::nodes_end() const
+{
+    return this->nodes_.end();
+}
+
+std::map<int64_t, osm_unpack::Way>::const_iterator osm_unpack::PrimitiveBlock::ways_begin()
+{
+    return this->ways_.begin();
+}
+
+std::map<int64_t, osm_unpack::Way>::const_iterator osm_unpack::PrimitiveBlock::ways_end()
+{
+    return this->ways_.end();
+}

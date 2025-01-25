@@ -4,67 +4,48 @@
 namespace osm_unpack
 {
 
-template<typename T, template<typename> class Iterable>
+template<typename T, template<typename> class BaseIterator>
 class Iterator
 {
 protected:
 
-    typename Iterable<T>::const_iterator it_;
+    BaseIterator<T> it_;
 
 public:
 
-    Iterator(const Iterator<T, Iterable> & it);
-    Iterator(typename Iterable<T>::const_iterator & it);
+    Iterator(const BaseIterator<T> & it);
 
-    virtual bool operator==(const typename Iterable<T>::const_iterator & other) const;
-    virtual bool operator==(const Iterator<T, Iterable>& other) const;
-    virtual bool operator!=(const typename Iterable<T>::const_iterator & other) const;
-    virtual bool operator!=(const Iterator<T, Iterable>& other) const;
+    virtual bool operator==(const BaseIterator<T> & other) const;
+    virtual bool operator!=(const BaseIterator<T> & other) const;
     virtual const T& operator*();
     virtual const T& operator->();
 
 };
 
-template<typename T, template<typename> class Iterable>
-inline Iterator<T, Iterable>::Iterator(const Iterator<T, Iterable> &it):
-    it_(it.it_) {}
-
-template <typename T, template<typename> class Iterable>
-inline Iterator<T, Iterable>::Iterator(typename Iterable<T>::const_iterator &it):
+template<typename T, template<typename> class BaseIterator>
+inline Iterator<T, BaseIterator>::Iterator(const BaseIterator<T> &it):
     it_(it) {}
 
-template<typename T, template<typename> class Iterable>
-inline bool Iterator<T, Iterable>::operator==(const typename Iterable<T>::const_iterator & other) const
+template<typename T, template<typename> class BaseIterator>
+inline bool Iterator<T, BaseIterator>::operator==(const BaseIterator<T> & other) const
 {
     return other == this->it_;
 }
 
-template<typename T, template<typename> class Iterable>
-inline bool Iterator<T, Iterable>::operator==(const Iterator<T, Iterable> & other) const
-{
-    return other == this->it_;
-}
-
-template<typename T, template<typename> class Iterable>
-inline bool Iterator<T, Iterable>::operator!=(const typename Iterable<T>::const_iterator &other) const
+template<typename T, template<typename> class BaseIterator>
+inline bool Iterator<T, BaseIterator>::operator!=(const BaseIterator<T> &other) const
 {
     return !(*this == other);
 }
 
-template<typename T, template<typename> class Iterable>
-inline bool Iterator<T, Iterable>::operator!=(const Iterator<T, Iterable> &other) const
-{
-    return !(*this == other);
-}
-
-template <typename T, template <typename> class Iterable>
-inline const T &Iterator<T, Iterable>::operator*()
+template <typename T, template <typename> class BaseIterator>
+inline const T &Iterator<T, BaseIterator>::operator*()
 {
     return *this->it_;
 }
 
-template<typename T, template<typename> class Iterable>
-inline const T& Iterator<T, Iterable>::operator->()
+template<typename T, template<typename> class BaseIterator>
+inline const T& Iterator<T, BaseIterator>::operator->()
 {
     return *this->it_;
 }
