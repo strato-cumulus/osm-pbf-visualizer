@@ -9,7 +9,7 @@
 
 struct AppState
 {
-    Renderer renderer;
+    std::unique_ptr<Renderer> renderer;
     SDL_AppResult app_result = SDL_APP_CONTINUE;
 };
 
@@ -18,14 +18,20 @@ SDL_AppResult SDL_AppInit(void** appstate, int argc, char* argv[])
 
     SDL_Init(SDL_INIT_VIDEO);
 
-    *appstate = new AppState;
+    AppState *app = new AppState;
+    *appstate = app;
 
     if (argc > 1) {
-        std::unique_ptr<osm_unpack::Reader>(
+        std::unique_ptr<osm_unpack::Reader> reader_ptr = std::unique_ptr<osm_unpack::Reader>(
             new osm_unpack::Reader(static_cast<const char*>(argv[1])));
+        
+        app->renderer = std::unique_ptr<Renderer>(
+            new Renderer(std::move(reader_ptr->ways()), std::move(reader_ptr->bounding_box())));
+
+        return SDL_APP_CONTINUE;
     }
 
-    return SDL_APP_CONTINUE;
+    return SDL_APP_FAILURE;
 }
 
 SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event* event)
@@ -47,7 +53,7 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event* event)
 SDL_AppResult SDL_AppIterate(void *appstate)
 {
     auto* app = (AppState*)appstate;
-    app->renderer.render();
+    app->renderer->render();
     return app->app_result;
 }
 
