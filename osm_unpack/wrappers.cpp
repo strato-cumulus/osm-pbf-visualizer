@@ -80,9 +80,8 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
         auto pbf_way = *pbf_way_it;
         auto refs = osm_unpack::StatefulIterator(pbf_way.refs().begin(), pbf_way.refs().end(), std::plus<const int64_t>{});
         std::vector<Node> found_nodes;
-        for ( auto i = 0; i < pbf_group.ways_size(); ++i ) {
-            auto ref = refs++;
-            auto node_it = nodes_.find(*ref);
+        for ( int ref_counter = 0 ; ref_counter < pbf_way.refs_size() ; ++ref_counter ) {
+            auto node_it = nodes_.find(*refs++);
             if ( node_it != nodes_.end() ) {
                 auto[node_id, node] = *node_it;
                 found_nodes.push_back(node);
