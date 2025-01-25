@@ -59,7 +59,9 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
         return;
     }
 
+#ifdef DEBUG
     std::cout << "Unpacking " << pbf_nodes_size << " Nodes\n";
+#endif
 
     auto nodes = pbf_group.nodes();
     auto node_it = nodes.begin();
@@ -93,7 +95,9 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
     auto pbf_nodes = pbf_group.dense();
     const int64_t pbf_nodes_size = pbf_nodes.id_size();
 
+#ifdef DEBUG
     std::cout << "Unpacking " << pbf_nodes_size << " DenseNodes\n";
+#endif
 
     auto id_it = osm_unpack::StatefulIterator(pbf_nodes.id().begin(), pbf_nodes.id().end(), std::plus<const int64_t>{});
     auto encoded_lat_it = osm_unpack::StatefulIterator(pbf_nodes.lat().begin(), pbf_nodes.lat().end(), std::plus<const int64_t>{});
@@ -126,7 +130,9 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
         return;
     }
 
+#ifdef DEBUG
     std::cout << "Unpacking " << ways_size << " Ways\n";
+#endif
 
     auto pbf_ways = pbf_group.ways();
     auto pbf_way_it = pbf_ways.begin();
