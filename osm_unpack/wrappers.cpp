@@ -53,7 +53,7 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup & pbf
 
     auto keys_vals_it = pbf_nodes.keys_vals().begin();
     
-    for ( int counter = 0; counter < pbf_nodes_size; ++counter ) {
+    for ( int counter = 0 ; counter < pbf_nodes_size; ++counter ) {
 
         std::unordered_map<std::string, std::string> tags;
 
@@ -74,9 +74,11 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup & pbf
 void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_group)
 {
     auto pbf_ways = pbf_group.ways();
+    auto pbf_way_it = pbf_ways.begin();
 
-    for ( auto way: pbf_ways ) {
-        auto refs = osm_unpack::StatefulIterator(way.refs().begin(), way.refs().end(), std::plus<const int64_t>{});
+    for ( int counter = 0 ; counter < pbf_group.ways_size() ; ++counter, ++pbf_way_it ) {
+        auto pbf_way = *pbf_way_it;
+        auto refs = osm_unpack::StatefulIterator(pbf_way.refs().begin(), pbf_way.refs().end(), std::plus<const int64_t>{});
         std::vector<Node> found_nodes;
         for ( auto i = 0; i < pbf_group.ways_size(); ++i ) {
             auto ref = refs++;
