@@ -77,8 +77,8 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
         }
 
         const int64_t id = pbf_node.id();
-        const double lat = decode_coordinate(pbf_node.lat(), lat_offset);
-        const double lon = decode_coordinate(pbf_node.lon(), lon_offset);
+        const double lat = decode_coordinate(pbf_node.lat(), lat_offset_);
+        const double lon = decode_coordinate(pbf_node.lon(), lon_offset_);
 
         auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
     }
@@ -112,8 +112,8 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
         }
 
         const int64_t id = *id_it++;
-        const double lat = decode_coordinate(*encoded_lat_it++, lat_offset);
-        const double lon = decode_coordinate(*encoded_lon_it++, lon_offset);
+        const double lat = decode_coordinate(*encoded_lat_it++, lat_offset_);
+        const double lon = decode_coordinate(*encoded_lon_it++, lon_offset_);
 
         auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
     }
@@ -147,7 +147,7 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
 
 const double osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coordinate, const int64_t &offset) const
 {
-    return (( coordinate * granularity ) + offset) / 1000000000.0;
+    return (( coordinate * granularity_ ) + offset) / 1000000000.0;
 }
 
 osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block,
@@ -156,9 +156,9 @@ osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_bl
     nodes_(nodes),
     ways_(ways),
     strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),
-    granularity(pbf_block.granularity()),
-    lat_offset(pbf_block.lat_offset()),
-    lon_offset(pbf_block.lon_offset())
+    granularity_(pbf_block.granularity()),
+    lat_offset_(pbf_block.lat_offset()),
+    lon_offset_(pbf_block.lon_offset())
 {
     for ( auto const& pbf_group : pbf_block.primitivegroup() ) {
         this->unpack_nodes(pbf_group);
@@ -190,4 +190,9 @@ osm_unpack::BoundingBox::BoundingBox(std::vector<osm_unpack::Node> nodes):
         left = left > lat ? lat : left;
         right = right < lat ? lat : right;
     }
+}
+
+const std::vector<osm_unpack::Node> osm_unpack::Way::nodes() const
+{
+    return this->nodes_;
 }

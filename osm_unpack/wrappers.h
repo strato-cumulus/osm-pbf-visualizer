@@ -19,7 +19,7 @@ class WrapperBase
 {
 protected:
 
-    std::unordered_map<std::string, std::string> tags;
+    std::unordered_map<std::string, std::string> tags_;
 
     template<class OutContainer, class InContainer>
     void unpack(OutContainer & out_container,
@@ -67,13 +67,14 @@ public:
 
 class Way: protected WrapperBase
 {
-    std::vector<Node> nodes;
+    std::vector<Node> nodes_;
 
 public:
 
     template<template<typename> class Iterable>
     Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end);
 
+    const std::vector<Node> nodes() const;
 };
 
 struct BoundingBox
@@ -88,9 +89,9 @@ class PrimitiveBlock: protected WrapperBase {
 
     std::vector<std::string> strings;
 
-    int32_t granularity;
-    int64_t lat_offset;
-    int64_t lon_offset;
+    int32_t granularity_;
+    int64_t lat_offset_;
+    int64_t lon_offset_;
 
     std::map<int64_t, osm_unpack::Node> &nodes_;
     std::map<int64_t, osm_unpack::Way> &ways_;
@@ -153,13 +154,13 @@ inline void WrapperBase::unpack_tags(const InContainer &in_container, const Dict
     translate(keys, in_container.keys(), dict_container);
     translate(vals, in_container.vals(), dict_container);
     for ( auto k_it = keys.begin(), v_it = keys.end(); k_it != keys.end(); k_it++, v_it++) {
-        tags.emplace(*k_it, *v_it);
+        tags_.emplace(*k_it, *v_it);
     }
 }
 
 template<template<typename> class Iterable>
 inline Way::Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end):
-    nodes(begin, end) {}
+    nodes_(begin, end) {}
 
 }
 

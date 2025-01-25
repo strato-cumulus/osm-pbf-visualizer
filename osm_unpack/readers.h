@@ -20,8 +20,8 @@ class Reader
     bool skip_past_header(std::istream & is, const std::string & header);
     int uncompress_blob(OSMPBF::PrimitiveBlock & block, std::istream & blob_source);
 
-    std::vector<osm_unpack::Node> nodes;
-    std::vector<osm_unpack::Way> ways;
+    std::vector<osm_unpack::Node> nodes_;
+    std::vector<osm_unpack::Way> ways_;
 
     BoundingBox bounding_box_;
 
@@ -31,6 +31,9 @@ public:
 
     Reader(const std::string & file_name);
     Reader(const char * file_name);
+
+    const std::vector<osm_unpack::Node> nodes() const;
+    const std::vector<osm_unpack::Way> ways() const;
 
     const BoundingBox bounding_box() const;
 };

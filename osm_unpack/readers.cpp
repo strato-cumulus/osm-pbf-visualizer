@@ -83,16 +83,26 @@ osm_unpack::Reader::Reader(const std::string & file_name)
         counter += 1;
     }
     
-    insert_values_to_vector(nodes, this->nodes);
-    insert_values_to_vector(ways, this->ways);
+    insert_values_to_vector(nodes, this->nodes_);
+    insert_values_to_vector(ways, this->ways_);
 
-    this->bounding_box_ = BoundingBox(this->nodes);
+    this->bounding_box_ = BoundingBox(this->nodes_);
 }
 
 osm_unpack::Reader::Reader(const char *file_name):
     Reader(std::string(file_name))
 {
     std::cout << file_name << std::endl;
+}
+
+const std::vector<osm_unpack::Node> osm_unpack::Reader::nodes() const
+{
+    return this->nodes_;
+}
+
+const std::vector<osm_unpack::Way> osm_unpack::Reader::ways() const
+{
+    return this->ways_;
 }
 
 const osm_unpack::BoundingBox osm_unpack::Reader::bounding_box() const
