@@ -30,6 +30,16 @@ const std::string osm_unpack::Node::tags_to_string() const
     return ss.str();
 }
 
+const double osm_unpack::Node::lat() const
+{
+    return this->lat_;
+}
+
+const double osm_unpack::Node::lon() const
+{
+    return this->lon_;
+}
+
 const std::string osm_unpack::Node::to_string() const
 {
     std::stringstream ss;
@@ -164,4 +174,20 @@ std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &
         return {};
     }
     return it->second;
+}
+
+osm_unpack::BoundingBox::BoundingBox():
+    top(0), bottom(0), left(0), right(0) {}
+
+osm_unpack::BoundingBox::BoundingBox(std::vector<osm_unpack::Node> nodes):
+    top(90), bottom(0), left(180), right(0)
+{
+    for ( auto const& node : nodes ) {
+        auto lat = node.lat();
+        auto lon = node.lon();
+        top = top > lon ? lon : top;
+        bottom = bottom < lon ? lon : bottom;
+        left = left > lat ? lat : left;
+        right = right < lat ? lat : right;
+    }
 }

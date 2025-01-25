@@ -59,6 +59,9 @@ public:
     Node(const int64_t & id, const double & lat, const double & lon,
         const std::unordered_map<std::string, std::string> & tags);
 
+    const double lat() const;
+    const double lon() const;
+
     const std::string to_string() const;
 };
 
@@ -71,6 +74,14 @@ public:
     template<template<typename> class Iterable>
     Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end);
 
+};
+
+struct BoundingBox
+{
+    double top, bottom, left, right;
+
+    BoundingBox();
+    BoundingBox(std::vector<osm_unpack::Node> nodes);
 };
 
 class PrimitiveBlock: protected WrapperBase {

@@ -23,12 +23,16 @@ class Reader
     std::vector<osm_unpack::Node> nodes;
     std::vector<osm_unpack::Way> ways;
 
+    BoundingBox bounding_box_;
+
     template <typename K, typename V> void insert_values_to_vector(const std::map<K, V> & input, std::vector<V> & output);
 
 public:
 
     Reader(const std::string & file_name);
     Reader(const char * file_name);
+
+    const BoundingBox bounding_box() const;
 };
 
 template <typename K, typename V>

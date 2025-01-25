@@ -85,10 +85,17 @@ osm_unpack::Reader::Reader(const std::string & file_name)
     
     insert_values_to_vector(nodes, this->nodes);
     insert_values_to_vector(ways, this->ways);
+
+    this->bounding_box_ = BoundingBox(this->nodes);
 }
 
 osm_unpack::Reader::Reader(const char *file_name):
     Reader(std::string(file_name))
 {
     std::cout << file_name << std::endl;
+}
+
+const osm_unpack::BoundingBox osm_unpack::Reader::bounding_box() const
+{
+    return this->bounding_box_;
 }
