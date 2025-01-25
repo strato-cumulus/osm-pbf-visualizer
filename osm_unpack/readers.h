@@ -23,11 +23,22 @@ class Reader
     std::vector<osm_unpack::Node> nodes;
     std::vector<osm_unpack::Way> ways;
 
+    template <typename K, typename V> void insert_values_to_vector(const std::map<K, V> & input, std::vector<V> & output);
+
 public:
 
     Reader(const std::string & file_name);
     Reader(const char * file_name);
 };
+
+template <typename K, typename V>
+inline void Reader::insert_values_to_vector(const std::map<K, V> &input, std::vector<V> &output)
+{
+    for ( auto it = input.begin() ; it != input.end() ; ++it ) {
+        auto[key, val] = *it;
+        output.push_back(val);
+    }
+}
 
 }
 

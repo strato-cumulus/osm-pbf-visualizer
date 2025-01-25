@@ -82,6 +82,9 @@ osm_unpack::Reader::Reader(const std::string & file_name)
         }
         counter += 1;
     }
+    
+    insert_values_to_vector(nodes, this->nodes);
+    insert_values_to_vector(ways, this->ways);
 }
 
 osm_unpack::Reader::Reader(const char *file_name):
