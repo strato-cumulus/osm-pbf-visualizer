@@ -140,7 +140,11 @@ const double osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coordi
     return (( coordinate * granularity ) + offset) / 1000000000.0;
 }
 
-osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block):
+osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block,
+                                           std::map<int64_t, osm_unpack::Node>& nodes,
+                                           std::map<int64_t, osm_unpack::Way>& ways):
+    nodes_(nodes),
+    ways_(ways),
     strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),
     granularity(pbf_block.granularity()),
     lat_offset(pbf_block.lat_offset()),
@@ -160,24 +164,4 @@ std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &
         return {};
     }
     return it->second;
-}
-
-std::map<int64_t, osm_unpack::Node>::const_iterator osm_unpack::PrimitiveBlock::nodes_begin() const
-{
-    return this->nodes_.begin();
-}
-
-std::map<int64_t, osm_unpack::Node>::const_iterator osm_unpack::PrimitiveBlock::nodes_end() const
-{
-    return this->nodes_.end();
-}
-
-std::map<int64_t, osm_unpack::Way>::const_iterator osm_unpack::PrimitiveBlock::ways_begin()
-{
-    return this->ways_.begin();
-}
-
-std::map<int64_t, osm_unpack::Way>::const_iterator osm_unpack::PrimitiveBlock::ways_end()
-{
-    return this->ways_.end();
 }

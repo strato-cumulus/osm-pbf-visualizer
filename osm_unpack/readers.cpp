@@ -64,6 +64,9 @@ osm_unpack::Reader::Reader(const std::string & file_name)
 
     int counter = 0;
 
+    std::map<int64_t, osm_unpack::Node> nodes;
+    std::map<int64_t, osm_unpack::Way> ways;
+
     while ( ! map_file.eof() ) {
 
         OSMPBF::PrimitiveBlock block;
@@ -72,7 +75,7 @@ osm_unpack::Reader::Reader(const std::string & file_name)
         }
 
         std::cout << "Unpacking block " << counter << std::endl;
-        osm_unpack::PrimitiveBlock primitive_block(block);
+        osm_unpack::PrimitiveBlock primitive_block(block, nodes, ways);
 
         if ( ! skip_past_header(map_file, osm_data_name) ) {
             break;

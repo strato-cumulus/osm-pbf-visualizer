@@ -81,8 +81,8 @@ class PrimitiveBlock: protected WrapperBase {
     int64_t lat_offset;
     int64_t lon_offset;
 
-    std::map<int64_t, osm_unpack::Node> nodes_;
-    std::map<int64_t, osm_unpack::Way> ways_;
+    std::map<int64_t, osm_unpack::Node> &nodes_;
+    std::map<int64_t, osm_unpack::Way> &ways_;
 
     void unpack_nodes(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
@@ -92,14 +92,10 @@ class PrimitiveBlock: protected WrapperBase {
 
 public:
 
-    PrimitiveBlock(const OSMPBF::PrimitiveBlock & parent_block);
+    PrimitiveBlock(const OSMPBF::PrimitiveBlock & parent_block,
+        std::map<int64_t, osm_unpack::Node>& nodes, std::map<int64_t, osm_unpack::Way>& ways);
 
     std::optional<osm_unpack::Node> find(const int64_t & id);
-    std::map<int64_t, osm_unpack::Node>::const_iterator nodes_begin() const;
-    std::map<int64_t, osm_unpack::Node>::const_iterator nodes_end() const;
-
-    std::map<int64_t, osm_unpack::Way>::const_iterator ways_begin();
-    std::map<int64_t, osm_unpack::Way>::const_iterator ways_end();
 };
 
 template <class OutContainer, class InContainer>
