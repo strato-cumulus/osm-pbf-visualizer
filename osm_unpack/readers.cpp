@@ -71,6 +71,7 @@ osm_unpack::Reader::Reader(const std::string & file_name)
             std::cerr << strerror(errno) << std::endl;
         }
 
+        std::cout << "Unpacking block " << counter << std::endl;
         osm_unpack::PrimitiveBlock primitive_block(block);
 
         if ( ! skip_past_header(map_file, osm_data_name) ) {
