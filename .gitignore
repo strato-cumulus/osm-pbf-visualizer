@@ -3,4 +3,5 @@
 *.pb.cc
 *.pb.h
 
+bin/
 data/
