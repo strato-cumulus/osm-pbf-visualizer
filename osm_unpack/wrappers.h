@@ -84,6 +84,7 @@ class PrimitiveBlock: protected WrapperBase {
     std::map<int64_t, osm_unpack::Node> nodes_;
     std::map<int64_t, osm_unpack::Way> ways_;
 
+    void unpack_nodes(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_ways(const OSMPBF::PrimitiveGroup & pbf_group);
 

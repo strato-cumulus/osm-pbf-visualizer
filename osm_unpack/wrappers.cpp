@@ -42,7 +42,39 @@ const std::string osm_unpack::Node::to_string() const
     return ss.str();
 }
 
-void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group)
+void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_group)
+{
+    auto pbf_nodes_size = pbf_group.nodes_size();
+    if ( pbf_nodes_size == 0 ) {
+        return;
+    }
+
+    std::cout << "Unpacking " << pbf_nodes_size << " Nodes\n";
+
+    auto nodes = pbf_group.nodes();
+    auto node_it = nodes.begin();
+    for ( int counter = 0 ; counter < pbf_nodes_size ; ++counter ) {
+        auto pbf_node = *node_it++;
+
+        std::unordered_map<std::string, std::string> tags;
+
+        auto keys = pbf_node.keys();
+        auto vals = pbf_node.vals();
+        for ( auto key_it = keys.begin(), val_it = vals.begin() ; key_it != keys.end() ; ++key_it, ++val_it ) {
+            auto const& key = strings[*key_it];
+            auto const& value = strings[*val_it];
+            tags.emplace(key, value);
+        }
+
+        const int64_t id = pbf_node.id();
+        const double lat = decode_coordinate(pbf_node.lat(), lat_offset);
+        const double lon = decode_coordinate(pbf_node.lon(), lon_offset);
+
+        auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
+    }
+}
+
+void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_group)
 {
     if ( ! pbf_group.has_dense() ) {
         return;
@@ -115,6 +147,7 @@ osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_bl
     lon_offset(pbf_block.lon_offset())
 {
     for ( auto const& pbf_group : pbf_block.primitivegroup() ) {
+        this->unpack_nodes(pbf_group);
         this->unpack_dense(pbf_group);
         this->unpack_ways(pbf_group);
     }
