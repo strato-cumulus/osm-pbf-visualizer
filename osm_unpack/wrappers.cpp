@@ -148,6 +148,7 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
                 found_nodes.push_back(node);
             }
         }
+        this->ways_.emplace(pbf_way.id(), osm_unpack::Way(found_nodes));
     }
 }
 
@@ -197,6 +198,9 @@ osm_unpack::BoundingBox::BoundingBox(std::vector<osm_unpack::Node> nodes):
         right = right < lat ? lat : right;
     }
 }
+
+osm_unpack::Way::Way(const std::vector<Node> &nodes):
+    nodes_(nodes) {}
 
 const std::vector<osm_unpack::Node> osm_unpack::Way::nodes() const
 {

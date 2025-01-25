@@ -71,6 +71,8 @@ class Way: protected WrapperBase
 
 public:
 
+    Way(const std::vector<Node> & nodes);
+
     template<template<typename> class Iterable>
     Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end);
 
