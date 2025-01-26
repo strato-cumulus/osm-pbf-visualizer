@@ -41,11 +41,6 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event* event)
     if (event->type == SDL_EVENT_QUIT) {
         app->app_result = SDL_APP_SUCCESS;
     }
-    else if (event->type == SDL_EVENT_KEY_DOWN) {
-        if (event->key.scancode == SDL_SCANCODE_A) {
-            std::cout << 'a' << std::endl;
-        }
-    }
 
     return SDL_APP_CONTINUE;  
 }

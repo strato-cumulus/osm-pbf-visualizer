@@ -47,13 +47,6 @@ Renderer::~Renderer()
     }
 }
 
-void Renderer::start_load_pbf(const char *file_name)
-{
-    std::thread load_thread([&]() {
-        new osm_unpack::Reader(file_name);
-    });
-}
-
 void Renderer::render()
 {
     SDL_SetRenderDrawColor(this->renderer, 255., 255., 255., SDL_ALPHA_OPAQUE);

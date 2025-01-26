@@ -22,7 +22,6 @@ public:
     Renderer(const std::vector<osm_unpack::Way> & ways, const osm_unpack::BoundingBox & bounding_box);
     virtual ~Renderer();
     
-    void start_load_pbf(const char* file);
     void render();
     void close();
 

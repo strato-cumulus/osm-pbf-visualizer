@@ -101,9 +101,7 @@ osm_unpack::Reader::Reader(const std::string & file_name)
 
 osm_unpack::Reader::Reader(const char *file_name):
     Reader(std::string(file_name))
-{
-    std::cout << file_name << std::endl;
-}
+{}
 
 const std::vector<osm_unpack::Node> osm_unpack::Reader::nodes() const
 {
