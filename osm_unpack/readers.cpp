@@ -1,5 +1,6 @@
 #include "readers.h"
 
+#include <chrono>
 #include <zlib.h>
 
 bool osm_unpack::Reader::skip_past_header(std::istream &is, const std::string &header)
@@ -43,6 +44,8 @@ int osm_unpack::Reader::uncompress_blob(OSMPBF::PrimitiveBlock &block, std::istr
 
 osm_unpack::Reader::Reader(const std::string & file_name)
 {
+    auto start = std::chrono::steady_clock::now();
+
     std::string osm_header_name("OSMHeader");
     std::string osm_data_name("OSMData");
 
@@ -90,6 +93,10 @@ osm_unpack::Reader::Reader(const std::string & file_name)
     insert_values_to_vector(ways, this->ways_);
 
     this->bounding_box_ = BoundingBox(this->nodes_);
+    auto elapsed = std::chrono::steady_clock::now() - start;
+    auto elapsed_seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+
+    std::cout << "Processed the map file in " << elapsed_seconds / 60 << "m " << elapsed_seconds % 60 << "s.\n";
 }
 
 osm_unpack::Reader::Reader(const char *file_name):
