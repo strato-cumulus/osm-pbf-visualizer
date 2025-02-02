@@ -104,14 +104,18 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
     auto encoded_lon_it = osm_unpack::StatefulIterator(pbf_nodes.lon().begin(), pbf_nodes.lon().end(), std::plus<const int64_t>{});
 
     auto keys_vals_it = pbf_nodes.keys_vals().begin();
-    
+
     for ( int counter = 0 ; counter < pbf_nodes_size; ++counter ) {
 
         std::unordered_map<std::string, std::string> tags;
 
-        while ( *keys_vals_it != 0 ) {
-            auto const& key = strings[*keys_vals_it++];
-            auto const& value = strings[*keys_vals_it++];
+        while ( keys_vals_it != pbf_nodes.keys_vals().end() ) {
+            if ( *keys_vals_it == 0 ) {
+                ++keys_vals_it;
+                break;
+            }
+            auto key = strings.at(*keys_vals_it++);
+            auto value = strings.at(*keys_vals_it++);
             tags.emplace(key, value);
         }
 
