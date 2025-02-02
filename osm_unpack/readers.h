@@ -26,8 +26,6 @@ class Reader
 
     BoundingBox bounding_box_;
 
-    template <typename K, typename V> void insert_values_to_vector(const std::map<K, V> & input, std::vector<V> & output);
-
 public:
 
     Reader(const std::string & file_name);
@@ -38,15 +36,6 @@ public:
 
     const BoundingBox bounding_box() const;
 };
-
-template <typename K, typename V>
-inline void Reader::insert_values_to_vector(const std::map<K, V> &input, std::vector<V> &output)
-{
-    for ( auto it = input.begin() ; it != input.end() ; ++it ) {
-        auto[key, val] = *it;
-        output.push_back(val);
-    }
-}
 
 }
 

@@ -40,6 +40,11 @@ const int64_t osm_unpack::Node::lon() const
     return this->lon_;
 }
 
+const int osm_unpack::Node::ways_size() const
+{
+    return this->ways_.size();
+}
+
 const std::string osm_unpack::Node::to_string() const
 {
     std::stringstream ss;
@@ -155,7 +160,7 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
             }
         }
         
-        this->ways_.emplace(pbf_way.id(), way);
+        this->ways_.push_back(way);
     }
 }
 
@@ -166,7 +171,7 @@ const int64_t osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coord
 
 osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block,
                                            std::map<int64_t, std::shared_ptr<osm_unpack::Node>> & nodes,
-                                           std::map<int64_t, std::shared_ptr<osm_unpack::Way>> & ways):
+                                           std::vector<std::shared_ptr<osm_unpack::Way>> & ways):
     nodes_(nodes),
     ways_(ways),
     strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),

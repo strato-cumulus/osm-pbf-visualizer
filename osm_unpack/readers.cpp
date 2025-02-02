@@ -68,7 +68,6 @@ osm_unpack::Reader::Reader(const std::string & file_name)
     int counter = 0;
 
     std::map<int64_t, std::shared_ptr<Node>> nodes;
-    std::map<int64_t, std::shared_ptr<Way>> ways;
 
     while ( ! map_file.eof() ) {
 
@@ -81,16 +80,20 @@ osm_unpack::Reader::Reader(const std::string & file_name)
         std::cout << "Unpacking block " << counter << std::endl;
 #endif
 
-        osm_unpack::PrimitiveBlock primitive_block(block, nodes, ways);
+        osm_unpack::PrimitiveBlock primitive_block(block, nodes, this->ways_);
 
         if ( ! skip_past_header(map_file, osm_data_name) ) {
             break;
         }
         counter += 1;
     }
-    
-    insert_values_to_vector(nodes, this->nodes_);
-    insert_values_to_vector(ways, this->ways_);
+
+    // filter out nodes which are not part of any way
+    for ( auto const&[id, node] : nodes ) {
+        if ( node->ways_size() > 0 ) {
+            this->nodes_.push_back(node);
+        }
+    }
 
     this->bounding_box_ = BoundingBox(this->nodes_);
     auto elapsed = std::chrono::steady_clock::now() - start;

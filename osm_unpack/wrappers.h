@@ -67,6 +67,8 @@ public:
     const int64_t lat() const;
     const int64_t lon() const;
 
+    const int ways_size() const;
+
     const std::string to_string() const;
 };
 
@@ -101,8 +103,8 @@ class PrimitiveBlock: protected WrapperBase {
     int64_t lat_offset_;
     int64_t lon_offset_;
 
-    std::map<int64_t, std::shared_ptr<Node>> &nodes_;
-    std::map<int64_t, std::shared_ptr<Way>> &ways_;
+    std::map<int64_t, std::shared_ptr<Node>> & nodes_;
+    std::vector<std::shared_ptr<Way>> & ways_;
 
     void unpack_nodes(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
@@ -113,7 +115,7 @@ class PrimitiveBlock: protected WrapperBase {
 public:
 
     PrimitiveBlock(const OSMPBF::PrimitiveBlock & parent_block,
-        std::map<int64_t, std::shared_ptr<osm_unpack::Node>>& nodes, std::map<int64_t, std::shared_ptr<osm_unpack::Way>>& ways);
+        std::map<int64_t, std::shared_ptr<osm_unpack::Node>> & nodes, std::vector<std::shared_ptr<osm_unpack::Way>> & ways);
 
     std::optional<std::shared_ptr<Node>> find(const int64_t & id);
 };
