@@ -37,6 +37,7 @@ Renderer::Renderer(const std::vector<std::shared_ptr<osm_unpack::Way>> & ways, c
     this->window = SDL_CreateWindow(
         "Window", 1024, 768, SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY);
     this->renderer = SDL_CreateRenderer(this->window, NULL);
+    SDL_SetRenderVSync(this->renderer, SDL_RENDERER_VSYNC_ADAPTIVE);
 }
 
 Renderer::~Renderer()
