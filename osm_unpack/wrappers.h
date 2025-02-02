@@ -52,8 +52,10 @@ class Node : WrapperBase {
     double lon_;
 
     std::unordered_map<std::string, std::string> tags_;
+    std::vector<std::weak_ptr<Way>> ways_;
 
     friend class PrimitiveBlock;
+    friend class Way;
 
     const std::string tags_to_string() const;
 
@@ -68,13 +70,17 @@ public:
     const std::string to_string() const;
 };
 
-class Way: protected WrapperBase
+class Way: protected WrapperBase, public std::enable_shared_from_this<Way>
 {
     std::vector<std::shared_ptr<Node>> nodes_;
 
+    friend class Node;
+
 public:
 
-    Way(const std::vector<std::shared_ptr<Node>> & nodes);
+    Way();
+
+    void push_node(std::shared_ptr<Node> & node);
 
     const std::vector<std::shared_ptr<Node>> nodes() const;
 };

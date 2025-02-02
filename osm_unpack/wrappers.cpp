@@ -145,16 +145,15 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
 
     for ( int counter = 0 ; counter < pbf_group.ways_size() ; ++counter, ++pbf_way_it ) {
         auto pbf_way = *pbf_way_it;
+        auto way = std::shared_ptr<Way>(new osm_unpack::Way());
         auto refs = osm_unpack::StatefulIterator(pbf_way.refs().begin(), pbf_way.refs().end(), std::plus<const int64_t>{});
-        std::vector<std::shared_ptr<Node>> found_nodes;
         for ( int ref_counter = 0 ; ref_counter < pbf_way.refs_size() ; ++ref_counter ) {
             auto node_it = nodes_.find(*refs++);
             if ( node_it != nodes_.end() ) {
                 auto[node_id, node] = *node_it;
-                found_nodes.push_back(node);
+                way->push_node(node);
             }
         }
-        auto way = std::shared_ptr<Way>(new osm_unpack::Way(found_nodes));
         
         this->ways_.emplace(pbf_way.id(), way);
     }
@@ -207,8 +206,13 @@ osm_unpack::BoundingBox::BoundingBox(const std::vector<std::shared_ptr<osm_unpac
     }
 }
 
-osm_unpack::Way::Way(const std::vector<std::shared_ptr<osm_unpack::Node>> &nodes):
-    nodes_(nodes) {}
+osm_unpack::Way::Way() {}
+
+void osm_unpack::Way::push_node(std::shared_ptr<osm_unpack::Node> & node)
+{
+    nodes_.push_back(node);
+    node->ways_.push_back(shared_from_this());
+}
 
 const std::vector<std::shared_ptr<osm_unpack::Node>> osm_unpack::Way::nodes() const
 {
