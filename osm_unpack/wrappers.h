@@ -73,9 +73,6 @@ public:
 
     Way(const std::vector<Node> & nodes);
 
-    template<template<typename> class Iterable>
-    Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end);
-
     const std::vector<Node> nodes() const;
 };
 
@@ -159,10 +156,6 @@ inline void WrapperBase::unpack_tags(const InContainer &in_container, const Dict
         tags_.emplace(*k_it, *v_it);
     }
 }
-
-template<template<typename> class Iterable>
-inline Way::Way(const typename Iterable<Node>::const_iterator & begin, const typename Iterable<Node>::const_iterator & end):
-    nodes_(begin, end) {}
 
 }
 
