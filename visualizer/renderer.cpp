@@ -59,6 +59,7 @@ void Renderer::render()
 void Renderer::close()
 {
     SDL_DestroyRenderer(this->renderer);
+    SDL_DestroyWindow(this->window);
     this->closed = true;
 }
 

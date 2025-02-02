@@ -58,4 +58,5 @@ void SDL_AppQuit(void* appstate, SDL_AppResult result)
     if (app) {
         delete app;
     }
+    SDL_Quit();
 }
