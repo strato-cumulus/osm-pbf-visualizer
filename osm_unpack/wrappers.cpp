@@ -186,16 +186,16 @@ std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &
 osm_unpack::BoundingBox::BoundingBox():
     top(0), bottom(0), left(0), right(0) {}
 
-osm_unpack::BoundingBox::BoundingBox(std::vector<osm_unpack::Node> nodes):
-    top(90000000000), bottom(0), left(180000000000), right(0)
+osm_unpack::BoundingBox::BoundingBox(const std::vector<osm_unpack::Node> & nodes):
+    top(0), bottom(90000000000), left(180000000000), right(0)
 {
     for ( auto const& node : nodes ) {
         auto lat = node.lat();
         auto lon = node.lon();
-        top = top > lon ? lon : top;
-        bottom = bottom < lon ? lon : bottom;
-        left = left > lat ? lat : left;
-        right = right < lat ? lat : right;
+        top = top < lat ? lat : top;
+        bottom = bottom > lat ? lat : bottom;
+        left = left > lon ? lon : left;
+        right = right < lon ? lon : right;
     }
 }
 

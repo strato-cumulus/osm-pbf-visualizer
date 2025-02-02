@@ -84,7 +84,7 @@ struct BoundingBox
     int64_t top, bottom, left, right;
 
     BoundingBox();
-    BoundingBox(std::vector<osm_unpack::Node> nodes);
+    BoundingBox(const std::vector<osm_unpack::Node> & nodes);
 };
 
 class PrimitiveBlock: protected WrapperBase {

@@ -22,9 +22,8 @@ void Renderer::render_way(const osm_unpack::Way &way, const int &screen_w_px, co
     while ( node_it != nodes.end() ) {
         auto node = *node_it++;
 
-        line_points[counter].x = ( node.lon() - bounding_box_.top ) * screen_h_px / bb_heigth_span;
-        // the 3/4 is a magic constant for now until I figure out how to center the view properly
-        line_points[counter].y = ( screen_w_px * 3/4 ) - ( node.lat() - bounding_box_.left ) * screen_w_px / bb_width_span;
+        line_points[counter].x = ( node.lon() - bounding_box_.left ) * screen_w_px / bb_width_span;
+        line_points[counter].y = ( node.lat() - bounding_box_.top ) * screen_h_px / bb_heigth_span;
 
         counter += 1;
     }
