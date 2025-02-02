@@ -51,7 +51,8 @@ class Node : WrapperBase {
     double lat_;
     double lon_;
 
-    std::unordered_map<std::string, std::string> tags_;
+    std::shared_ptr<std::vector<std::string>> strings_;
+    std::unordered_map<uint32_t, uint32_t> tags_;
     std::vector<std::weak_ptr<Way>> ways_;
 
     friend class PrimitiveBlock;
@@ -62,11 +63,12 @@ class Node : WrapperBase {
 public:
 
     Node(const int64_t & id, const int64_t & lat, const int64_t & lon,
-        const std::unordered_map<std::string, std::string> & tags);
+        const std::unordered_map<uint32_t, uint32_t> & tags);
 
     const int64_t lat() const;
     const int64_t lon() const;
 
+    const std::shared_ptr<std::vector<std::string>> strings();
     const int ways_size() const;
 
     const std::string to_string() const;
@@ -97,7 +99,7 @@ struct BoundingBox
 
 class PrimitiveBlock: protected WrapperBase {
 
-    std::vector<std::string> strings;
+    std::shared_ptr<std::vector<std::string>> strings;
 
     int32_t granularity_;
     int64_t lat_offset_;

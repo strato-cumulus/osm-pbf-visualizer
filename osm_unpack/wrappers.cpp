@@ -6,7 +6,7 @@
 #include "transformers.h"
 
 osm_unpack::Node::Node(const int64_t &id, const int64_t &lat, const int64_t &lon,
-    const std::unordered_map<std::string, std::string> & tags):
+    const std::unordered_map<uint32_t, uint32_t> & tags):
     id_(id), lat_(lat), lon_(lon), tags_(tags) {}
 
 const std::string osm_unpack::Node::tags_to_string() const
@@ -18,8 +18,8 @@ const std::string osm_unpack::Node::tags_to_string() const
         goto finish;
     }
     while ( true ) {
-        auto[k, v] = *it;
-        ss << k << ": " << v;
+        auto[k_id, v_id] = *it;
+        ss << strings_->at(k_id) << ": " << strings_->at(v_id);
         if ( ++it == tags_.end() ) {
             break;
         }
@@ -38,6 +38,11 @@ const int64_t osm_unpack::Node::lat() const
 const int64_t osm_unpack::Node::lon() const
 {
     return this->lon_;
+}
+
+const std::shared_ptr<std::vector<std::string>> osm_unpack::Node::strings()
+{
+    return this->strings_;
 }
 
 const int osm_unpack::Node::ways_size() const
@@ -73,13 +78,13 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
     for ( int counter = 0 ; counter < pbf_nodes_size ; ++counter ) {
         auto pbf_node = *node_it++;
 
-        std::unordered_map<std::string, std::string> tags;
+        std::unordered_map<uint32_t, uint32_t> tags;
 
         auto keys = pbf_node.keys();
         auto vals = pbf_node.vals();
         for ( auto key_it = keys.begin(), val_it = vals.begin() ; key_it != keys.end() ; ++key_it, ++val_it ) {
-            auto const& key = strings[*key_it];
-            auto const& value = strings[*val_it];
+            auto const& key = *key_it;
+            auto const& value = *val_it;
             tags.emplace(key, value);
         }
 
@@ -113,15 +118,15 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
 
     for ( int counter = 0 ; counter < pbf_nodes_size; ++counter ) {
 
-        std::unordered_map<std::string, std::string> tags;
+        std::unordered_map<uint32_t, uint32_t> tags;
 
         while ( keys_vals_it != pbf_nodes.keys_vals().end() ) {
             if ( *keys_vals_it == 0 ) {
                 ++keys_vals_it;
                 break;
             }
-            auto key = strings.at(*keys_vals_it++);
-            auto value = strings.at(*keys_vals_it++);
+            auto key = *keys_vals_it++;
+            auto value = *keys_vals_it++;
             tags.emplace(key, value);
         }
 
@@ -174,7 +179,7 @@ osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_bl
                                            std::vector<std::shared_ptr<osm_unpack::Way>> & ways):
     nodes_(nodes),
     ways_(ways),
-    strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),
+    strings(std::make_shared<std::vector<std::string>>(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end())),
     granularity_(pbf_block.granularity()),
     lat_offset_(pbf_block.lat_offset()),
     lon_offset_(pbf_block.lon_offset())
