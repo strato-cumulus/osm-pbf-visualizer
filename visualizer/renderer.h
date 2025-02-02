@@ -10,7 +10,7 @@ class Renderer
     SDL_Window* window;
     SDL_Renderer* renderer;
 
-    std::vector<osm_unpack::Way> ways_;
+    std::vector<std::shared_ptr<osm_unpack::Way>> ways_;
     osm_unpack::BoundingBox bounding_box_;
 
     bool closed = false;
@@ -19,7 +19,7 @@ class Renderer
 
 public:
 
-    Renderer(const std::vector<osm_unpack::Way> & ways, const osm_unpack::BoundingBox & bounding_box);
+    Renderer(const std::vector<std::shared_ptr<osm_unpack::Way>> & ways, const osm_unpack::BoundingBox & bounding_box);
     virtual ~Renderer();
     
     void render();

@@ -67,8 +67,8 @@ osm_unpack::Reader::Reader(const std::string & file_name)
 
     int counter = 0;
 
-    std::map<int64_t, osm_unpack::Node> nodes;
-    std::map<int64_t, osm_unpack::Way> ways;
+    std::map<int64_t, std::shared_ptr<Node>> nodes;
+    std::map<int64_t, std::shared_ptr<Way>> ways;
 
     while ( ! map_file.eof() ) {
 
@@ -103,12 +103,12 @@ osm_unpack::Reader::Reader(const char *file_name):
     Reader(std::string(file_name))
 {}
 
-const std::vector<osm_unpack::Node> osm_unpack::Reader::nodes() const
+const std::vector<std::shared_ptr<osm_unpack::Node>> osm_unpack::Reader::nodes() const
 {
     return this->nodes_;
 }
 
-const std::vector<osm_unpack::Way> osm_unpack::Reader::ways() const
+const std::vector<std::shared_ptr<osm_unpack::Way>> osm_unpack::Reader::ways() const
 {
     return this->ways_;
 }

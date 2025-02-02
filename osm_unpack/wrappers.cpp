@@ -82,7 +82,8 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
         const int64_t lat = decode_coordinate(pbf_node.lat(), lat_offset_);
         const int64_t lon = decode_coordinate(pbf_node.lon(), lon_offset_);
 
-        auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
+        auto node = std::shared_ptr<Node>(new Node(id, lat, lon, tags));
+        auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, node));
     }
 }
 
@@ -123,7 +124,8 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
         const double lat = decode_coordinate(*encoded_lat_it++, lat_offset_);
         const double lon = decode_coordinate(*encoded_lon_it++, lon_offset_);
 
-        auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
+        auto node = std::shared_ptr<Node>(new Node(id, lat, lon, tags));
+        auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, node));
     }
 }
 
@@ -144,7 +146,7 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
     for ( int counter = 0 ; counter < pbf_group.ways_size() ; ++counter, ++pbf_way_it ) {
         auto pbf_way = *pbf_way_it;
         auto refs = osm_unpack::StatefulIterator(pbf_way.refs().begin(), pbf_way.refs().end(), std::plus<const int64_t>{});
-        std::vector<Node> found_nodes;
+        std::vector<std::shared_ptr<Node>> found_nodes;
         for ( int ref_counter = 0 ; ref_counter < pbf_way.refs_size() ; ++ref_counter ) {
             auto node_it = nodes_.find(*refs++);
             if ( node_it != nodes_.end() ) {
@@ -152,7 +154,9 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
                 found_nodes.push_back(node);
             }
         }
-        this->ways_.emplace(pbf_way.id(), osm_unpack::Way(found_nodes));
+        auto way = std::shared_ptr<Way>(new osm_unpack::Way(found_nodes));
+        
+        this->ways_.emplace(pbf_way.id(), way);
     }
 }
 
@@ -162,8 +166,8 @@ const int64_t osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coord
 }
 
 osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block,
-                                           std::map<int64_t, osm_unpack::Node>& nodes,
-                                           std::map<int64_t, osm_unpack::Way>& ways):
+                                           std::map<int64_t, std::shared_ptr<osm_unpack::Node>> & nodes,
+                                           std::map<int64_t, std::shared_ptr<osm_unpack::Way>> & ways):
     nodes_(nodes),
     ways_(ways),
     strings(pbf_block.stringtable().s().begin(), pbf_block.stringtable().s().end()),
@@ -178,7 +182,7 @@ osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_bl
     }
 }
 
-std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &id)
+std::optional<std::shared_ptr<osm_unpack::Node>> osm_unpack::PrimitiveBlock::find(const int64_t &id)
 {
     auto it = nodes_.find(id);
     if ( it == nodes_.end() ) {
@@ -190,12 +194,12 @@ std::optional<osm_unpack::Node> osm_unpack::PrimitiveBlock::find(const int64_t &
 osm_unpack::BoundingBox::BoundingBox():
     top(0), bottom(0), left(0), right(0) {}
 
-osm_unpack::BoundingBox::BoundingBox(const std::vector<osm_unpack::Node> & nodes):
+osm_unpack::BoundingBox::BoundingBox(const std::vector<std::shared_ptr<osm_unpack::Node>> & nodes):
     top(0), bottom(90000000000), left(180000000000), right(0)
 {
     for ( auto const& node : nodes ) {
-        auto lat = node.lat();
-        auto lon = node.lon();
+        auto lat = node->lat();
+        auto lon = node->lon();
         top = top < lat ? lat : top;
         bottom = bottom > lat ? lat : bottom;
         left = left > lon ? lon : left;
@@ -203,10 +207,10 @@ osm_unpack::BoundingBox::BoundingBox(const std::vector<osm_unpack::Node> & nodes
     }
 }
 
-osm_unpack::Way::Way(const std::vector<Node> &nodes):
+osm_unpack::Way::Way(const std::vector<std::shared_ptr<osm_unpack::Node>> &nodes):
     nodes_(nodes) {}
 
-const std::vector<osm_unpack::Node> osm_unpack::Way::nodes() const
+const std::vector<std::shared_ptr<osm_unpack::Node>> osm_unpack::Way::nodes() const
 {
     return this->nodes_;
 }

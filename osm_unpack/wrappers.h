@@ -3,6 +3,7 @@
 
 #include <iterator>
 #include <map>
+#include <memory>
 #include <optional>
 #include <unordered_map>
 #include <vector>
@@ -42,6 +43,8 @@ protected:
         const DictContainer & dict_container);
 };
 
+class Way;
+
 class Node : WrapperBase {
 
     int64_t id_;
@@ -67,13 +70,13 @@ public:
 
 class Way: protected WrapperBase
 {
-    std::vector<Node> nodes_;
+    std::vector<std::shared_ptr<Node>> nodes_;
 
 public:
 
-    Way(const std::vector<Node> & nodes);
+    Way(const std::vector<std::shared_ptr<Node>> & nodes);
 
-    const std::vector<Node> nodes() const;
+    const std::vector<std::shared_ptr<Node>> nodes() const;
 };
 
 struct BoundingBox
@@ -81,7 +84,7 @@ struct BoundingBox
     int64_t top, bottom, left, right;
 
     BoundingBox();
-    BoundingBox(const std::vector<osm_unpack::Node> & nodes);
+    BoundingBox(const std::vector<std::shared_ptr<Node>> & nodes);
 };
 
 class PrimitiveBlock: protected WrapperBase {
@@ -92,8 +95,8 @@ class PrimitiveBlock: protected WrapperBase {
     int64_t lat_offset_;
     int64_t lon_offset_;
 
-    std::map<int64_t, osm_unpack::Node> &nodes_;
-    std::map<int64_t, osm_unpack::Way> &ways_;
+    std::map<int64_t, std::shared_ptr<Node>> &nodes_;
+    std::map<int64_t, std::shared_ptr<Way>> &ways_;
 
     void unpack_nodes(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
@@ -104,9 +107,9 @@ class PrimitiveBlock: protected WrapperBase {
 public:
 
     PrimitiveBlock(const OSMPBF::PrimitiveBlock & parent_block,
-        std::map<int64_t, osm_unpack::Node>& nodes, std::map<int64_t, osm_unpack::Way>& ways);
+        std::map<int64_t, std::shared_ptr<osm_unpack::Node>>& nodes, std::map<int64_t, std::shared_ptr<osm_unpack::Way>>& ways);
 
-    std::optional<osm_unpack::Node> find(const int64_t & id);
+    std::optional<std::shared_ptr<Node>> find(const int64_t & id);
 };
 
 template <class OutContainer, class InContainer>

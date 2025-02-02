@@ -22,8 +22,8 @@ void Renderer::render_way(const osm_unpack::Way &way, const int &screen_w_px, co
     while ( node_it != nodes.end() ) {
         auto node = *node_it++;
 
-        line_points[counter].x = ( node.lon() - bounding_box_.left ) * screen_w_px / bb_width_span;
-        line_points[counter].y = ( node.lat() - bounding_box_.top ) * screen_h_px / bb_heigth_span;
+        line_points[counter].x = ( node->lon() - bounding_box_.left ) * screen_w_px / bb_width_span;
+        line_points[counter].y = ( node->lat() - bounding_box_.top ) * screen_h_px / bb_heigth_span;
 
         counter += 1;
     }
@@ -31,7 +31,7 @@ void Renderer::render_way(const osm_unpack::Way &way, const int &screen_w_px, co
     SDL_RenderLines(this->renderer, line_points, nodes.size());
 }
 
-Renderer::Renderer(const std::vector<osm_unpack::Way> & ways, const osm_unpack::BoundingBox & bounding_box):
+Renderer::Renderer(const std::vector<std::shared_ptr<osm_unpack::Way>> & ways, const osm_unpack::BoundingBox & bounding_box):
     ways_(ways), bounding_box_(bounding_box)
 {
     this->window = SDL_CreateWindow(
@@ -67,6 +67,6 @@ void Renderer::render_ways()
     SDL_GetWindowSizeInPixels(this->window, &w, &h);
 
     for ( auto const& way : ways_ ) {
-        render_way(way, w, h);
+        render_way(*way, w, h);
     }
 }
