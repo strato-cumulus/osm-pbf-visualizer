@@ -40,7 +40,10 @@ inline StatefulIterator<T, BaseIterator, Function>::StatefulIterator(const BaseI
 template<typename T, template<typename U> class BaseIterator, template<typename V> class Function>
 inline StatefulIterator<T, BaseIterator, Function> &StatefulIterator<T, BaseIterator, Function>::operator++()
 {
-    value_ = increment_fn(value_, *++this->it_);
+    ++this->it_;
+    if ( this->it_ != this->end_ ) {
+        value_ = increment_fn(value_, *this->it_);
+    }
     return *this;
 }
 
