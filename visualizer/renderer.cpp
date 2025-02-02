@@ -11,8 +11,8 @@ void Renderer::render_way(const osm_unpack::Way &way, const int &screen_w_px, co
         return;
     }
 
-    double bb_heigth_span = bounding_box_.bottom - bounding_box_.top;
-    double bb_width_span = bounding_box_.right - bounding_box_.left;
+    int64_t bb_heigth_span = bounding_box_.bottom - bounding_box_.top;
+    int64_t bb_width_span = bounding_box_.right - bounding_box_.left;
 
     auto node_it = nodes.begin();
 
@@ -22,9 +22,9 @@ void Renderer::render_way(const osm_unpack::Way &way, const int &screen_w_px, co
     while ( node_it != nodes.end() ) {
         auto node = *node_it++;
 
-        line_points[counter].x = ( node.lon() - bounding_box_.top ) / bb_heigth_span * screen_h_px;
+        line_points[counter].x = ( node.lon() - bounding_box_.top ) * screen_h_px / bb_heigth_span;
         // the 3/4 is a magic constant for now until I figure out how to center the view properly
-        line_points[counter].y = ( screen_w_px * 3/4 ) - ( node.lat() - bounding_box_.left ) / bb_width_span * screen_w_px;
+        line_points[counter].y = ( screen_w_px * 3/4 ) - ( node.lat() - bounding_box_.left ) * screen_w_px / bb_width_span;
 
         counter += 1;
     }

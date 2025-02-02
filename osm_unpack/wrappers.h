@@ -56,11 +56,11 @@ class Node : WrapperBase {
 
 public:
 
-    Node(const int64_t & id, const double & lat, const double & lon,
+    Node(const int64_t & id, const int64_t & lat, const int64_t & lon,
         const std::unordered_map<std::string, std::string> & tags);
 
-    const double lat() const;
-    const double lon() const;
+    const int64_t lat() const;
+    const int64_t lon() const;
 
     const std::string to_string() const;
 };
@@ -81,7 +81,7 @@ public:
 
 struct BoundingBox
 {
-    double top, bottom, left, right;
+    int64_t top, bottom, left, right;
 
     BoundingBox();
     BoundingBox(std::vector<osm_unpack::Node> nodes);
@@ -102,7 +102,7 @@ class PrimitiveBlock: protected WrapperBase {
     void unpack_dense(const OSMPBF::PrimitiveGroup & pbf_group);
     void unpack_ways(const OSMPBF::PrimitiveGroup & pbf_group);
 
-    const double decode_coordinate(const int64_t & coordinate, const int64_t & offset) const;
+    const int64_t decode_coordinate(const int64_t & coordinate, const int64_t & offset) const;
 
 public:
 

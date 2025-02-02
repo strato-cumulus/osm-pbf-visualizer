@@ -5,7 +5,7 @@
 
 #include "transformers.h"
 
-osm_unpack::Node::Node(const int64_t &id, const double &lat, const double &lon,
+osm_unpack::Node::Node(const int64_t &id, const int64_t &lat, const int64_t &lon,
     const std::unordered_map<std::string, std::string> & tags):
     id_(id), lat_(lat), lon_(lon), tags_(tags) {}
 
@@ -30,12 +30,12 @@ const std::string osm_unpack::Node::tags_to_string() const
     return ss.str();
 }
 
-const double osm_unpack::Node::lat() const
+const int64_t osm_unpack::Node::lat() const
 {
     return this->lat_;
 }
 
-const double osm_unpack::Node::lon() const
+const int64_t osm_unpack::Node::lon() const
 {
     return this->lon_;
 }
@@ -79,8 +79,8 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
         }
 
         const int64_t id = pbf_node.id();
-        const double lat = decode_coordinate(pbf_node.lat(), lat_offset_);
-        const double lon = decode_coordinate(pbf_node.lon(), lon_offset_);
+        const int64_t lat = decode_coordinate(pbf_node.lat(), lat_offset_);
+        const int64_t lon = decode_coordinate(pbf_node.lon(), lon_offset_);
 
         auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, Node(id, lat, lon, tags)));
     }
@@ -152,9 +152,9 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
     }
 }
 
-const double osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coordinate, const int64_t &offset) const
+const int64_t osm_unpack::PrimitiveBlock::decode_coordinate(const int64_t &coordinate, const int64_t &offset) const
 {
-    return (( coordinate * granularity_ ) + offset) / 1000000000.0;
+    return ( coordinate * granularity_ ) + offset;
 }
 
 osm_unpack::PrimitiveBlock::PrimitiveBlock(const OSMPBF::PrimitiveBlock & pbf_block,
@@ -187,7 +187,7 @@ osm_unpack::BoundingBox::BoundingBox():
     top(0), bottom(0), left(0), right(0) {}
 
 osm_unpack::BoundingBox::BoundingBox(std::vector<osm_unpack::Node> nodes):
-    top(90), bottom(0), left(180), right(0)
+    top(90000000000), bottom(0), left(180000000000), right(0)
 {
     for ( auto const& node : nodes ) {
         auto lat = node.lat();
