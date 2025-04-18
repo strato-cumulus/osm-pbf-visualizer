@@ -20,7 +20,8 @@ class WrapperBase
 {
 protected:
 
-    std::unordered_map<std::string, std::string> tags_;
+    std::shared_ptr<std::vector<std::string>> strings_;
+    std::unordered_map<uint32_t, uint32_t> tags_;
 
     template<class OutContainer, class InContainer>
     void unpack(OutContainer & out_container,
@@ -52,18 +53,14 @@ class Node : WrapperBase {
     double lon_;
 
     std::shared_ptr<std::vector<std::string>> strings_;
-    std::unordered_map<uint32_t, uint32_t> tags_;
     std::vector<std::weak_ptr<Way>> ways_;
 
     friend class PrimitiveBlock;
     friend class Way;
 
-    const std::string tags_to_string() const;
-
 public:
 
-    Node(const int64_t & id, const int64_t & lat, const int64_t & lon,
-        const std::unordered_map<uint32_t, uint32_t> & tags);
+    Node(const int64_t & id, const int64_t & lat, const int64_t & lon);
 
     const int64_t lat() const;
     const int64_t lon() const;
@@ -78,7 +75,10 @@ class Way: protected WrapperBase, public std::enable_shared_from_this<Way>
 {
     std::vector<std::shared_ptr<Node>> nodes_;
 
+    friend class PrimitiveBlock;
     friend class Node;
+
+    const std::string tags_to_string() const;
 
 public:
 

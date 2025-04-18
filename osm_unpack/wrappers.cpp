@@ -5,11 +5,10 @@
 
 #include "transformers.h"
 
-osm_unpack::Node::Node(const int64_t &id, const int64_t &lat, const int64_t &lon,
-    const std::unordered_map<uint32_t, uint32_t> & tags):
-    id_(id), lat_(lat), lon_(lon), tags_(tags) {}
+osm_unpack::Node::Node(const int64_t &id, const int64_t &lat, const int64_t &lon):
+    id_(id), lat_(lat), lon_(lon) {}
 
-const std::string osm_unpack::Node::tags_to_string() const
+const std::string osm_unpack::Way::tags_to_string() const
 {
     std::stringstream ss;
     ss << "{";
@@ -57,7 +56,6 @@ const std::string osm_unpack::Node::to_string() const
         << "id: " << id_ << ", "
         << "lat: " << lat_ << ", "
         << "lon: " << lon_ << ", "
-        << "tags: " << tags_to_string()
         << ")";
     return ss.str();
 }
@@ -74,21 +72,22 @@ void osm_unpack::PrimitiveBlock::unpack_nodes(const OSMPBF::PrimitiveGroup &pbf_
     for ( int counter = 0 ; counter < pbf_nodes_size ; ++counter ) {
         auto pbf_node = *node_it++;
 
-        std::unordered_map<uint32_t, uint32_t> tags;
+        const int64_t id = pbf_node.id();
+        const int64_t lat = decode_coordinate(pbf_node.lat(), lat_offset_);
+        const int64_t lon = decode_coordinate(pbf_node.lon(), lon_offset_);
+
+        auto node = std::shared_ptr<Node>(new Node(id, lat, lon));
 
         auto keys = pbf_node.keys();
         auto vals = pbf_node.vals();
         for ( auto key_it = keys.begin(), val_it = vals.begin() ; key_it != keys.end() ; ++key_it, ++val_it ) {
             auto const& key = *key_it;
             auto const& value = *val_it;
-            tags.emplace(key, value);
+            node->tags_.emplace(key, value);
         }
 
-        const int64_t id = pbf_node.id();
-        const int64_t lat = decode_coordinate(pbf_node.lat(), lat_offset_);
-        const int64_t lon = decode_coordinate(pbf_node.lon(), lon_offset_);
+        node->strings_ = this->strings;
 
-        auto node = std::shared_ptr<Node>(new Node(id, lat, lon, tags));
         auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, node));
     }
 }
@@ -110,7 +109,11 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
 
     for ( int counter = 0 ; counter < pbf_nodes_size; ++counter ) {
 
-        std::unordered_map<uint32_t, uint32_t> tags;
+        const int64_t id = *id_it++;
+        const double lat = decode_coordinate(*encoded_lat_it++, lat_offset_);
+        const double lon = decode_coordinate(*encoded_lon_it++, lon_offset_);
+
+        auto node = std::shared_ptr<Node>(new Node(id, lat, lon));
 
         while ( keys_vals_it != pbf_nodes.keys_vals().end() ) {
             if ( *keys_vals_it == 0 ) {
@@ -119,14 +122,11 @@ void osm_unpack::PrimitiveBlock::unpack_dense(const OSMPBF::PrimitiveGroup &pbf_
             }
             auto key = *keys_vals_it++;
             auto value = *keys_vals_it++;
-            tags.emplace(key, value);
+            node->tags_.emplace(key, value);
         }
 
-        const int64_t id = *id_it++;
-        const double lat = decode_coordinate(*encoded_lat_it++, lat_offset_);
-        const double lon = decode_coordinate(*encoded_lon_it++, lon_offset_);
+        node->strings_ = this->strings;
 
-        auto node = std::shared_ptr<Node>(new Node(id, lat, lon, tags));
         auto[node_entry, success] = this->nodes_.insert(std::make_pair(id, node));
     }
 }
@@ -144,6 +144,7 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
     for ( int counter = 0 ; counter < pbf_group.ways_size() ; ++counter, ++pbf_way_it ) {
         auto pbf_way = *pbf_way_it;
         auto way = std::shared_ptr<Way>(new osm_unpack::Way());
+        way->strings_ = this->strings;
         auto refs = osm_unpack::StatefulIterator(pbf_way.refs().begin(), pbf_way.refs().end(), std::plus<const int64_t>{});
         for ( int ref_counter = 0 ; ref_counter < pbf_way.refs_size() ; ++ref_counter ) {
             auto node_it = nodes_.find(*refs++);
@@ -152,6 +153,17 @@ void osm_unpack::PrimitiveBlock::unpack_ways(const OSMPBF::PrimitiveGroup & pbf_
                 way->push_node(node);
             }
         }
+
+        auto keys = pbf_way.keys();
+        auto vals = pbf_way.vals();
+
+        for ( auto key_it = keys.begin(), val_it = vals.begin() ; key_it != keys.end() ; ++key_it, ++val_it ) {
+            auto const& key = *key_it;
+            auto const& value = *val_it;
+            way->tags_.emplace(key, value);
+        }
+
+        way->strings_ = this->strings;
         
         this->ways_.push_back(way);
     }
